@@ -117,8 +117,7 @@ write.  For details on YAML, see the `YAML Specification <https://yaml.org/>`.
 Below is an example YAML specification for the Inesonic NinjaForms/Redmine
 bridge.
 
-.. code-block:: yaml
-   :linenos:
+.. code-block::
       
    type-of-inquiry-field: "type_of_inquiry"
    support:
