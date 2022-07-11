@@ -1,0 +1,7 @@
+{
+    "require": {
+        "kbsali/redmine-api": "^2.2",
+        "twig/twig": "^3.4",
+        "symfony/yaml": "^6.0"
+    }
+}

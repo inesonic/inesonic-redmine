@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html dir="ltr" lang="en-us">
+  <head>
+    <title>Welcome</title>
+    <style>
+      .table {
+          border-width: 0px;
+          border-collapse: collapse;
+          margin-left: 0pt;
+          margin-right: auto;
+          margin-top: 12pt;
+          margin-bottom: 12pt;
+      }
+
+      .category {
+          text-align: left;
+          font-family: Arial;
+          font-size: 12pt;
+          white-space: nowrap;
+      }
+      
+      .data {
+          text-align: left;
+          font-family: Arial;
+          font-size: 12pt;
+          white-space: nowrap;
+      }
+      
+      .message {
+          text-align: left;
+          font-family: Arial;
+          font-size: 10pt;
+      }
+    </style>
+  </head>
+  <body>
+    <p class="category">A support request was issue by:</p>
+    <table class="table">
+      <tbody>
+        <tr><td><span class="category">Name:&nbsp;</span></td><td><span class="data">{{ display_name }}</span></td></tr>
+        <tr><td><span class="category">Email:&nbsp;</span></td><td><span class="data">{{ email }}</span></td></tr>
+        <tr><td><span class="category">Username:&nbsp;</span></td><td><span class="data">{{ username }}</span></td></tr>
+      </tbody>
+    </table>
+    <hr/>
+    <p class="message">{{ message }}</p>
+  </body>
+</html>

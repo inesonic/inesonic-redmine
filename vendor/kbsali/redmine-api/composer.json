@@ -1,0 +1,42 @@
+{
+    "name": "kbsali/redmine-api",
+    "type": "library",
+    "description": "Redmine API client",
+    "homepage": "https://github.com/kbsali/php-redmine-api",
+    "keywords": [
+        "redmine",
+        "api"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Kevin Saliou",
+            "email": "kevin@saliou.name",
+            "homepage": "http://kevin.saliou.name"
+        }
+    ],
+    "require": {
+        "php": "^7.4 || ^8.0",
+        "ext-curl": "*",
+        "ext-simplexml": "*",
+        "ext-json": "*",
+        "psr/http-client": "^1.0",
+        "psr/http-factory": "^1.0"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "3.6.0",
+        "phpunit/phpunit": "9.5.10",
+        "guzzlehttp/psr7": "2.1.0",
+        "php-mock/php-mock-phpunit": "2.6.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Redmine\\": "src/Redmine/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Redmine\\Tests\\": "tests/"
+        }
+    }
+}
