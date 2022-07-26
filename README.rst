@@ -307,6 +307,65 @@ Each category entry can contain the following sub-entries.
 +-------------------+---------------------------------------------------+
 
 
+The Redmine Shortcode
+=====================
+This plugin provides a single shortcode you can use to show bug/issue status
+information stored in Redmine.  Data is displayed in a table listing
+
+* The Redmine issue ID
+* The issue created data
+* The issue type (bug, feature request, etc)
+* The issue status
+* The short description of the issue.
+
+To use, insert the redmine shortcode as shown below.  
+
+.. code-block::
+
+   [inesonic_redmine
+       project="<Redmine Project Name"
+	   status="<Status values to show, comma separated>"
+	   customer_id="<customer ID">]
+
+All of the attributes are optional.
+
++-------------+--------------------+------------------------------------------+
+| Attribute   | Default            | Description                              |
++=============+====================+==========================================+
+| project     | All projects       | The project to show.  This is the        |
+|             |                    | project name as displayed in your        |
+|             |                    | Redmine site.                            |
++-------------+--------------------+------------------------------------------+
+| status      | All statuses       | A comma separated list of project status |
+|             |                    | values.  Values are as showin in your    |
+|             |                    | Redmine site.                            |
++-------------+--------------------+------------------------------------------+
+| customer_id | Logged in customer | The ID of the customer to show.  The     |
+|             |                    | logged in customer is used by default or |
+|             |                    | all issues if not logged in.  A value of |
+|             |                    | "0" will show issues for all customers.  |
++-------------+--------------------+------------------------------------------+
+
+As an example, to show all issues for the project "Website" for all customers:
+
+.. code-block::
+
+   [inesonic_redmine project="Website" customer_id="0"]
+
+If you wanted to limit the issues to ones with status "Assigned", "In Work", or
+"Resolved", for just the logged in customer, you would use:
+
+.. code-block::
+
+   [inesonic_redmine project="Website" status="Assigned,In Work,Resolved"]
+
+Or, for all customers:   
+
+.. code-block::
+
+   [inesonic_redmine project="Website" status="Assigned,In Work,Resolved" customer_id="0"]
+
+
 Email Templates
 ===============
 Email text content is generated using the Symfony\Twig library.  Documentation

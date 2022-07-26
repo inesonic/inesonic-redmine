@@ -449,50 +449,56 @@ class InesonicRedmine {
      * \return Returns the user's first name.
      */
     public function redmine_shortcode($attributes) {
-        if (array_key_exists('project', $attributes)) {
+        if (is_array($attributes) && array_key_exists('project', $attributes)) {
             $project = $attributes['project'];
         } else {
             $project = '';
         }
 
-        if (array_key_exists('status', $attributes)) {
+        if (is_array($attributes) && array_key_exists('status', $attributes)) {
             $statuses = $attributes['status'];
         } else {
             $statuses = '';
         }
 
-        global $wpdb;
-        $query_result = $wpdb->get_results(
-            $wpdb->prepare(
-                'SELECT payload FROM ' . $wpdb->prefix . 'inesonic_redmine_issues_and_errata' . ' WHERE ' .
-                    'project = %s AND status = %s',
-                $project,
-                $statuses
-            )
-        );
-
-        if ($wpdb->num_rows > 0) {
-            $response = $query_result[0]->payload;
+        if (is_array($attributes) && array_key_exists('customer_id', $attributes)) {
+            $customer_id = intval($attributes['customer_id']);
         } else {
-            $response = $this->get_issue_data($project, $statuses);
-            $wpdb->insert(
-                $wpdb->prefix . 'inesonic_redmine_issues_and_errata',
-                array(
-                    'project' => $project,
-                    'status' => $statuses,
-                    'payload' => $response
-                ),
-                array(
-                    '%s',
-                    '%s',
-                    '%s'
-                )
-            );
+            $customer_id = get_current_user_id();
         }
 
-        $customer_id = get_current_user_id();
-        if ($customer_id !== 0 && $customer_id !== null) {
-            $response .= '<style>.inesonic-redmine-' . $customer_id . ' { font-style: italic; }</style>';
+        if ($customer_id === null || $customer_id === 0) {
+            global $wpdb;
+            $query_result = $wpdb->get_results(
+                $wpdb->prepare(
+                    'SELECT payload FROM ' . $wpdb->prefix . 'inesonic_redmine_issues_and_errata' . ' WHERE ' .
+                    'project = %s AND status = %s',
+                    $project,
+                    $statuses
+                )
+            );
+
+            if ($wpdb->num_rows > 0) {
+                $response = $query_result[0]->payload;
+            } else {
+                $response = $this->get_issue_data($project, $statuses);
+                $wpdb->insert(
+                    $wpdb->prefix . 'inesonic_redmine_issues_and_errata',
+                    array(
+                        'project' => $project,
+                        'status' => $statuses,
+                        'payload' => $response
+                    ),
+                    array(
+                        '%s',
+                        '%s',
+                        '%s'
+                    )
+                );
+            }
+        } else {
+            $response = $this->get_issue_data($project, $statuses, $customer_id) .
+                        '<style>.inesonic-redmine-0' . $customer_id . ' { font-style: italic; }</style>';
         }
 
         return $response;
@@ -511,7 +517,7 @@ class InesonicRedmine {
      *
      * \return Returns the expected Shortcode output.
      */
-    private function get_issue_data($project, $statuses) {
+    private function get_issue_data($project, $statuses, $customer_id) {
         $client_url = $this->options->client_url();
         $api_key = $this->options->api_key();
         $redmine = new \Redmine\Client\NativeCurlClient($client_url, $api_key);
@@ -542,16 +548,46 @@ class InesonicRedmine {
                 foreach ($issue_data_this_status as $issue_entry) {
                     if (is_array($issue_entry) && array_key_exists('id', $issue_entry)) {
                         $issue_id = $issue_entry['id'];
-                        $issues[$issue_id] = $issue_entry;
+
+                        if ($customer_id_field_id === null || $customer_id === null || $customer_id === 0) {
+                            $issues[$issue_id] = $issue_entry;
+                        } else if (array_key_exists('custom_fields', $issue_entry)) {
+                            $custom_fields = $issue_entry['custom_fields'];
+                            $number_custom_fields = count($custom_fields);
+                            $index = 0;
+                            while ($index < $number_custom_fields                        &&
+                                   $custom_fields[$index]['id'] != $customer_id_field_id    ) {
+                                ++$index;
+                            }
+
+                            if ($index < $number_custom_fields && $custom_fields[$index]['value'] == $customer_id) {
+                                $issues[$issue_id] = $issue_entry;
+                            }
+                        }
                     }
                 }
             }
         } else {
-            $issue_data = $redmine->getApi('issue')->all($request);
+            $issue_data = $redmine->getApi('issue')->all($request)['issues'];
             foreach ($issue_data as $issue_entry) {
                 if (is_array($issue_entry) && array_key_exists('id', $issue_entry)) {
                     $issue_id = $issue_entry['id'];
-                    $issues[$issue_id] = $issue_entry;
+
+                    if ($customer_id_field_id === null || $customer_id === null || $customer_id === 0) {
+                        $issues[$issue_id] = $issue_entry;
+                    } else if (array_key_exists('custom_fields', $issue_entry)) {
+                        $custom_fields = $issue_entry['custom_fields'];
+                        $number_custom_fields = count($custom_fields);
+                        $index = 0;
+                        while ($index < $number_custom_fields                        &&
+                               $custom_fields[$index]['id'] != $customer_id_field_id    ) {
+                            ++$index;
+                        }
+
+                        if ($index < $number_custom_fields && $custom_fields[$index]['value'] == $customer_id) {
+                            $issues[$issue_id] = $issue_entry;
+                        }
+                    }
                 }
             }
         }
@@ -755,19 +791,6 @@ class InesonicRedmine {
             $redmine_issue_category,
             $uploaded_files
         ) {
-        do_action(
-            'inesonic-logger-1',
-            "add_to_redmine(" .
-                $user_data->ID . ", '" .
-                $text_field_content . "', '" .
-                $brief_description . "', '" .
-                $redmine_project . "', '" .
-                $redmine_tracker . "', '" .
-                $redmine_issue_category . "', " .
-                var_export($uploaded_files, true) .
-            ")"
-        );
-
         $client_url = $this->options->client_url();
         $api_key = $this->options->api_key();
         $customer_id_field = trim($this->options->customer_id_field());
